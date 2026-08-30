@@ -1,0 +1,61 @@
+version: 2026.240.1943
+plugin-desktop-kind:
+    candy:
+        version: 2026.242.0930
+        description: |
+            The `theme` / `session` / `displaymanager` / `desktopentry` DESKTOP-SURFACE kinds.
+            Four first-class entities describing a graphical session the way init:/service:
+            describes a supervised process: the KIND is a renderer VOCABULARY and the
+            authored entity is DATA. One theme entity renders into a Hyprland config, a sway
+            config and a GTK settings file without naming any of them.
+
+            All four are FLAT (Structural:false — no deploy members): their self-contained
+            values ride op.Params, are validated at load against this plugin's served
+            #ThemeInput / #SessionInput / #DisplayManagerInput / #DesktopEntryInput schemas
+            (validateAuthoredPluginInput), and fold into uf.PluginKinds[<word>][<name>] as
+            opaque JSON.
+
+            OUT-OF-PROCESS, and that is the right placement rather than a limitation: these
+            words are consumed only at candy-compile time, when project plugins are already
+            loaded. Nothing in the core parse path needs them, so adopting them requires no
+            charly change at all — unlike the harness kinds, which must be recognised on
+            every parse and are therefore compiled in.
+
+            WHY KINDS AND NOT `write:` STEPS. Each could be a write: with a heredoc. What a
+            kind buys is a validator and cross-references a write: cannot express. The theme
+            validator rejects a render template naming a token the theme does not define —
+            an undefined token renders as an EMPTY STRING, so the failure is a terminal with
+            no background or a bar with an invisible accent, which no build step reports.
+            The desktopentry validator enforces exec XOR url and rejects a half-declared
+            icon. Verifiable in this repo: `go test ./...` exercises both in each direction.
+        plugin:
+            source: github.com/opencharly/plugin-desktop-kind/candy/plugin-desktop-kind
+            providers:
+                - kind:theme
+                - kind:session
+                - kind:displaymanager
+                - kind:desktopentry
+        plan:
+            - check: this candy contributes NO image content, so there is nothing on the image to assert
+              id: desktop-kind-no-image-content
+              context:
+                - build
+              # An honest placeholder, and the description says so rather than claiming more.
+              #
+              # A `plugin:` candy declares a source the HOST builds and serves; it installs
+              # no package and copies no file, so any image-side assertion would be either
+              # vacuous or false. Inventing image content purely to have something to check
+              # would be worse than saying this.
+              #
+              # The substantive gates for this candy live where the behaviour lives:
+              #
+              #   - the repo's CI runs `go build`, `go vet`, `go test` and `gofmt -l` over
+              #     the module on every PR (.github/workflows/deploy.yml).
+              #   - plugin_test.go drives the real Invoke entrypoint for all four words and
+              #     both validators, in each direction.
+              #   - schema_parity_test.go asserts the served #*Input defs still match spec's
+              #     authored surface, so the two copies cannot drift apart silently.
+              #
+              # A verb plugin can do better — plugin-punktfunk probes its own `punktfunk:
+              # health` verb at runtime — but a KIND plugin serves no verb to dispatch.
+              command: "true"

@@ -47,18 +47,18 @@ jobs:
           # Stage a project whose discover: block actually reaches the candy, so this
           # step gates the manifest instead of silently passing on an empty scan.
           mkdir -p /tmp/validate/candy
-          cp -r candy/plugin-punktfunk /tmp/validate/candy/plugin-punktfunk
+          cp -r candy/plugin-desktop-kind /tmp/validate/candy/plugin-desktop-kind
           printf 'version: 2026.240.1943\ndiscover:\n    - path: candy\n      recursive: true\n' > /tmp/validate/charly.yml
           cd /tmp/validate && /tmp/charly/bin/charly box validate
 
       - name: The plugin module builds, vets and tests
         run: |
-          cd candy/plugin-punktfunk
+          cd candy/plugin-desktop-kind
           GOWORK=off go build ./...
           GOWORK=off go vet ./...
           GOWORK=off go test ./...
 
       - name: gofmt is clean
         run: |
-          cd candy/plugin-punktfunk
+          cd candy/plugin-desktop-kind
           test -z "$(gofmt -l .)" || { echo "gofmt found unformatted files:"; gofmt -l .; exit 1; }
