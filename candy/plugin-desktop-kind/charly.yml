@@ -36,8 +36,26 @@ plugin-desktop-kind:
                 - kind:displaymanager
                 - kind:desktopentry
         plan:
-            - check: the desktop kinds ship a buildable Go module the host serves out-of-process, and its four provided words each round-trip an authored entity
-              id: desktop-kind-module-present
+            - check: this candy contributes NO image content, so there is nothing on the image to assert
+              id: desktop-kind-no-image-content
               context:
                 - build
+              # An honest placeholder, and the description says so rather than claiming more.
+              #
+              # A `plugin:` candy declares a source the HOST builds and serves; it installs
+              # no package and copies no file, so any image-side assertion would be either
+              # vacuous or false. Inventing image content purely to have something to check
+              # would be worse than saying this.
+              #
+              # The substantive gates for this candy live where the behaviour lives:
+              #
+              #   - the repo's CI runs `go build`, `go vet`, `go test` and `gofmt -l` over
+              #     the module on every PR (.github/workflows/deploy.yml).
+              #   - plugin_test.go drives the real Invoke entrypoint for all four words and
+              #     both validators, in each direction.
+              #   - schema_parity_test.go asserts the served #*Input defs still match spec's
+              #     authored surface, so the two copies cannot drift apart silently.
+              #
+              # A verb plugin can do better — plugin-punktfunk probes its own `punktfunk:
+              # health` verb at runtime — but a KIND plugin serves no verb to dispatch.
               command: "true"
