@@ -1,0 +1,7 @@
+.build/
+.check/
+.containerignore
+.dockerignore
+output/
+*.bak*
+*.log
