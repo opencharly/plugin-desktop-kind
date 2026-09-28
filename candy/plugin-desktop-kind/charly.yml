@@ -1,7 +1,5 @@
-version: 2026.240.1943
 plugin-desktop-kind:
     candy:
-        version: 2026.242.0930
         description: |
             The `theme` / `session` / `displaymanager` / `desktopentry` DESKTOP-SURFACE kinds.
             Four first-class entities describing a graphical session the way init:/service:
