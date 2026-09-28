@@ -2,7 +2,6 @@
 #
 #  OUT-OF-PROCESS placement: these words are consumed only at candy-compile time, when
 #  project plugins are already loaded, so adopting them needs no charly change.
-version: 2026.240.1943
 repo: github.com/opencharly/plugin-desktop-kind
 discover:
     - path: candy
