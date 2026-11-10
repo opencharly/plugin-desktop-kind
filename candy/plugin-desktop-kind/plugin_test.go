@@ -122,17 +122,11 @@ func TestInvoke_Rejects(t *testing.T) {
 	}
 }
 
-// The served capabilities are the contract the host reads to know these words exist. A
+// The served capabilities are the contract the host reads to know these words exist, and a
 // mismatch between the advertised InputDef and the schema's actual def name makes the load
-// gate silently validate against nothing.
-func TestMeta_AdvertisesFourKindsWithMatchingDefs(t *testing.T) {
-	schemaSrc, err := schemaFS.ReadFile("schema/desktop.cue")
-	if err != nil {
-		t.Fatalf("reading the embedded schema: %v", err)
-	}
-	for _, def := range []string{"#ThemeInput", "#SessionInput", "#DisplayManagerInput", "#DesktopEntryInput"} {
-		if !strings.Contains(string(schemaSrc), def+": {") {
-			t.Errorf("the served schema does not define %s, but NewMeta advertises it", def)
-		}
-	}
-}
+// gate silently validate against nothing. That check now lives in schema_served_test.go
+// (TestAdvertisedInputDefsResolveInTheServedSchema), where it reads the words and their defs
+// out of NewMeta's own Describe reply and resolves each def in the COMPILED served body: the
+// substring match this file used to do read the schema SOURCE, so a def that stopped
+// spelling `name: {` — every §10.1 S3 derived enum does — would have been reported missing
+// while it resolved fine.

@@ -72,7 +72,11 @@ package schema
 
 #SessionInput: {
 	compositor!: string & !=""
-	syntax?: *"lua" | "ini" | "sway" | "xml" | "yaml"
+	// S3: the words are rows of the `_syntax` table at the foot of this file, and the
+	// enum is `or()` of that table's derived word list. The `*"lua"` default stays
+	// written inline — S3 permits a literal default, and the default is a VALUE
+	// choice the word table does not decide.
+	syntax?: *"lua" | or(_syntaxWord)
 	config_path_template!: string & !=""
 	model?: *"assembly" | "file_set"
 
@@ -99,13 +103,15 @@ package schema
 // ─── displaymanager ───────────────────────────────────────────────────────────────────
 
 #DisplayManagerInput: {
-	manager: *"sddm" | "greetd" | "gdm" | "ly"
+	// S3: the words are rows of the `_manager` table at the foot of this file; the
+	// `*"sddm"` default stays inline (a literal default is S3's one inline enum).
+	manager: *"sddm" | or(_managerWord)
 	// Cross-checked against a session's session_desktop.id by the compile-time consumer,
 	// which can see every entity; this provider is handed one body and would have to guess
 	// at the rest.
 	session!: string & =~"^[a-z0-9]+(-[a-z0-9]+)*$"
 	autologin?: #DkAutoLogin
-	numlock?: *"none" | "on" | "off"
+	numlock?: *"none" | or(_numlockWord)
 	theme?: string & !=""
 	config?: [...#DkRender]
 	unit?: string & !=""
@@ -141,13 +147,80 @@ package schema
 }
 
 #DkWindow: {
-	placement?: *"default" | "float" | "tile" | "fullscreen" | "maximize"
+	// S3: the words are rows of the `_placement` table at the foot of this file; the
+	// `*"default"` default stays inline.
+	placement?: *"default" | or(_placementWord)
 	workspace?: string & !=""
 	size?:      string & =~"^[0-9]+x[0-9]+$"
 }
 
 // The freedesktop registered MAIN categories, verbatim. Closed because a typo here errors
-// NOWHERE — the entry silently vanishes from every menu.
-#DkCategory: "AudioVideo" | "Audio" | "Video" | "Development" | "Education" |
-	"Game" | "Graphics" | "Network" | "Office" | "Science" | "Settings" |
-	"System" | "Utility"
+// NOWHERE — the entry silently vanishes from every menu. S3: the words are rows of the
+// `_category` table at the foot of this file.
+#DkCategory: or(_categoryWord)
+
+// ─── vocabulary tables (S3) ────────────────────────────────────────────────────────────
+// Every closed set of words is a table keyed by word, and its word list is DERIVED from
+// the table and used as `or()` of that list (§10.1 S3, D-PAT-3). The table and the enum it
+// feeds therefore cannot disagree, and a new word is ONE row here.
+//
+// `@vocab` names the owner (§3.1). This plugin serves FOUR capability words rather than
+// one, so the owner is the word whose input def cites the set — `session`,
+// `displaymanager` or `desktopentry` — not the repo name, which no capability word spells.
+//
+// A two-value literal default stays written inline (`variant?: *"dark" | "light"`,
+// `scope?: *"user" | "system"`, `model?: *"assembly" | "file_set"`,
+// `type?: *"Application" | "XSession"`): S3 states that the two-value default is the only
+// inline enum, and a two-word pair spelled where the author meets it reads better than a
+// table a hundred lines away.
+_syntax: {
+	lua: {}
+	ini: {}
+	sway: {}
+	xml: {}
+	yaml: {}
+} @vocab(session)
+_syntaxWord: [for w, _ in _syntax {w}]
+
+_manager: {
+	sddm: {}
+	greetd: {}
+	gdm: {}
+	ly: {}
+} @vocab(displaymanager)
+_managerWord: [for w, _ in _manager {w}]
+
+_numlock: {
+	none: {}
+	on: {}
+	off: {}
+} @vocab(displaymanager)
+_numlockWord: [for w, _ in _numlock {w}]
+
+_placement: {
+	default: {}
+	float: {}
+	tile: {}
+	fullscreen: {}
+	maximize: {}
+} @vocab(desktopentry)
+_placementWord: [for w, _ in _placement {w}]
+
+// The MAIN categories the comment above `#DkCategory` names — the registry's additional
+// and reserved categories are not part of that def and are not added here.
+_category: {
+	AudioVideo: {}
+	Audio: {}
+	Video: {}
+	Development: {}
+	Education: {}
+	Game: {}
+	Graphics: {}
+	Network: {}
+	Office: {}
+	Science: {}
+	Settings: {}
+	System: {}
+	Utility: {}
+} @vocab(desktopentry)
+_categoryWord: [for w, _ in _category {w}]
